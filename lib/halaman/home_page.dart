@@ -258,7 +258,7 @@ class _HomePageState extends State<HomePage> {
 
                   bool success = await apiService.submitTugas(
                     name: nameController.text,
-                    price: int.parse(priceController.text),
+                    price: int.tryParse(priceController.text) ?? 0,
                     description: descController.text,
                     githubUrl: githubController.text,
                   );

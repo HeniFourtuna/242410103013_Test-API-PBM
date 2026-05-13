@@ -119,6 +119,188 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  void _showSubmitDialog() {
+    final nameController = TextEditingController();
+    final priceController = TextEditingController();
+    final descController = TextEditingController();
+    final githubController = TextEditingController();
+    bool isSubmitting = false;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          backgroundColor: const Color(0xFF1E1E1E),
+          title: const Text(
+            'Submit Tugas',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Pastikan data benar sebelum submit!\nData tidak bisa diubah setelah submit.',
+                  style: TextStyle(color: Color(0xFFCFCFCF), fontSize: 12),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: nameController,
+                  style: const TextStyle(color: Color(0xFFCFCFCF)),
+                  decoration: InputDecoration(
+                    labelText: 'Nama Produk',
+                    labelStyle: const TextStyle(color: Color(0xFFCFCFCF)),
+                    filled: true,
+                    fillColor: const Color(0xFF2E2E2E),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: const BorderSide(color: Color(0xFF7F49B4)),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: priceController,
+                  keyboardType: TextInputType.number,
+                  style: const TextStyle(color: Color(0xFFCFCFCF)),
+                  decoration: InputDecoration(
+                    labelText: 'Harga',
+                    labelStyle: const TextStyle(color: Color(0xFFCFCFCF)),
+                    filled: true,
+                    fillColor: const Color(0xFF2E2E2E),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: const BorderSide(color: Color(0xFF7F49B4)),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: descController,
+                  maxLines: 2,
+                  style: const TextStyle(color: Color(0xFFCFCFCF)),
+                  decoration: InputDecoration(
+                    labelText: 'Deskripsi',
+                    labelStyle: const TextStyle(color: Color(0xFFCFCFCF)),
+                    filled: true,
+                    fillColor: const Color(0xFF2E2E2E),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: const BorderSide(color: Color(0xFF7F49B4)),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: githubController,
+                  style: const TextStyle(color: Color(0xFFCFCFCF)),
+                  decoration: InputDecoration(
+                    labelText: 'GitHub URL',
+                    hintText: 'https://github.com/username/repo',
+                    hintStyle: const TextStyle(color: Color(0xFF555555)),
+                    labelStyle: const TextStyle(color: Color(0xFFCFCFCF)),
+                    prefixIcon: const Icon(Icons.link, color: Color(0xFF7F49B4)),
+                    filled: true,
+                    fillColor: const Color(0xFF2E2E2E),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: const BorderSide(color: Color(0xFF7F49B4)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Batal', style: TextStyle(color: Color(0xFFCFCFCF))),
+            ),
+            ElevatedButton(
+              onPressed: isSubmitting
+                ? null
+                : () async {
+                  if (
+                    nameController.text.isEmpty ||
+                    priceController.text.isEmpty ||
+                    descController.text.isEmpty ||
+                    githubController.text.isEmpty
+                  ) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Semua field wajib diisi!'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                    return;
+                  }
+
+                  setDialogState(() => isSubmitting = true);
+
+                  bool success = await apiService.submitTugas(
+                    name: nameController.text,
+                    price: int.parse(priceController.text),
+                    description: descController.text,
+                    githubUrl: githubController.text,
+                  );
+
+                  if (!mounted) return;
+                  Navigator.pop(ctx);
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        success
+                          ? 'Tugas berhasil disubmit!'
+                          : 'Tugas gagal disubmit, Harap coba lagi.',
+                      ),
+                      backgroundColor:
+                        success ? const Color(0xFF7F49B4) : Colors.red,
+                    ),
+                  );
+                },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF7F49B4),
+              ),
+              child: isSubmitting
+                ? const SizedBox(
+                  height: 16,
+                  width: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+                : const Text(
+                  'Submit',
+                  style: TextStyle(color: Colors.white),
+                ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -130,6 +312,11 @@ class _HomePageState extends State<HomePage> {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.upload, color: Colors.white,),
+            onPressed: _showSubmitDialog,
+            tooltip: 'Submit Tugas',
+          ),
           Center(
             child: Container(
               margin: const EdgeInsets.only(right: 8),
